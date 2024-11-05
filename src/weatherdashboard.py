@@ -46,7 +46,7 @@ class WeatherDashboard:
             self.render_weather_info(),
             
             # Input for updating weather and viewing forecast
-            fh.H3("Enter a city to update the weather or view the forecast:", style="text-align: center;"),
+            fh.H3("Enter a city and select forecast days to update the weather or view the forecast:", style="text-align: center;"),
             fh.Div(
                 fh.Input(
                     type="text", 
@@ -57,11 +57,11 @@ class WeatherDashboard:
                 ),
                 fh.Input(
                     type="number", 
-                    placeholder="Number of forecast days (1-7)", 
+                    placeholder="Number of forecast days (1-5)", 
                     name="forecast_days", 
                     id="forecast_days_input", 
                     min="1", 
-                    max="7", 
+                    max="5", 
                     cls="days-input"
                 ),
                 fh.Button(
@@ -81,5 +81,5 @@ class WeatherDashboard:
             
             # Placeholder for dynamically updated weather information and forecast chart
             fh.Div(id="weather-info", style="text-align: center;"),
-            fh.Div(id="forecast-chart", style="text-align: center;")  # Placeholder for forecast chart
+            fh.Div(id="forecast-chart", style="text-align: center;")
         )
