@@ -42,7 +42,7 @@ def generate_weather_chart(city_name, forecast_days=5):
 
 def create_chart(days, data_min, data_max, city_name, ylabel, title, label_min, label_max):
     """Helper function to generate a temperature chart with min and max values."""
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(8, 4))
     plt.plot(days, data_min, marker='o', linestyle='-', color='blue', label=label_min)
     plt.plot(days, data_max, marker='o', linestyle='-', color='red', label=label_max)
     plt.title(f'{title} for {city_name}')
@@ -54,7 +54,7 @@ def create_chart(days, data_min, data_max, city_name, ylabel, title, label_min, 
 
 def create_single_chart(days, data, city_name, ylabel, title):
     """Helper function to generate a single line chart."""
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(8, 4))
     plt.plot(days, data, marker='o', linestyle='-', color='green')
     plt.title(f'{title} for {city_name}')
     plt.xlabel('Date')
