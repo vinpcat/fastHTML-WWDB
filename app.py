@@ -1,7 +1,6 @@
 from fasthtml import common as fh
-from visualise import generate_weather_chart
 from weatherdashboard import WeatherDashboard
-from error_handler import validate_forecast_days  # Import the error handler
+from weather_api import WeatherAPI
 
 app, rt = fh.fast_app()
 
@@ -9,19 +8,28 @@ app, rt = fh.fast_app()
 def homepage():
     return WeatherDashboard().render()
 
-@rt("/update_forecast", ["get"])
-def update_forecast(forecast_days: int):
-    # Validate forecast_days input
-    error_message = validate_forecast_days(forecast_days)
+@rt("/update_weather", ["get"])
+def update_weather(city_name: str):
+    api = WeatherAPI()
+    data = api.get_weather_by_city(city_name)
     
-    # If there's an error message, return it immediately
-    if error_message:
-        return error_message
-
-    # If input is valid, generate and display the chart
-    return fh.Div(
-        generate_weather_chart(int(forecast_days)),  # Cast to int to ensure correct type
-        fh.P(f"Forecast for the next {forecast_days} days")
-    )
+    if data:
+        weather_info = {
+            "current_temp": data["main"]["temp"],
+            "condition": data["weather"][0]["description"].capitalize(),
+            "humidity": data["main"]["humidity"],
+            "wind_speed": data["wind"]["speed"]
+        }
+        
+        return fh.Div(
+            fh.H2(f"Current Weather in {city_name}: {weather_info['current_temp']}°C, {weather_info['condition']}"),
+            fh.H3(f"Humidity: {weather_info['humidity']}%"),
+            fh.H3(f"Wind Speed: {weather_info['wind_speed']} km/h"),
+            cls="updated-weather"
+        )
+    else:
+        return fh.Div(
+            fh.P("Error: Unable to fetch weather data. Please try again.", cls="error-message")
+        )
 
 fh.serve()
