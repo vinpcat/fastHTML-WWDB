@@ -1,28 +1,37 @@
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 import io
 import base64
 from fasthtml import common as fh
+from weather_api import WeatherAPI
 
-def generate_weather_chart(days):
-    temperatures = [np.random.randint(15, 30) for _ in range(days)]
+def generate_weather_chart(city_name, days=5):
+    api = WeatherAPI()
+    forecast_data = api.get_forecast_by_city(city_name, days)
+    
+    if not forecast_data or "list" not in forecast_data:
+        return fh.Div(fh.P("Error: Unable to fetch forecast data. Please try again.", cls="error-message"))
+    
+    # Extract temperature data for the forecast days
+    temperatures = [day["temp"]["day"] for day in forecast_data["list"]]
+    days_range = range(1, len(temperatures) + 1)
+    
+    # Plot the temperature forecast as a line graph
     plt.figure(figsize=(10, 5))
-    plt.plot(range(1, days + 1), temperatures, marker='o')
-    plt.title('Temperature Forecast')
+    plt.plot(days_range, temperatures, marker='o', linestyle='-')
+    plt.title(f'Temperature Forecast for {city_name}')
     plt.xlabel('Days')
     plt.ylabel('Temperature (°C)')
     plt.grid(True)
-
-    # Save plot to a buffer and encode it as a base64 string
+    
+    # Save plot to a buffer and encode as base64 string
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
     buf.seek(0)
     plt.close()
-
+    
     image_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-    # Use FastHTML to return an Img element with the base64 data
     return fh.Div(
-        fh.Img(src=f"data:image/png;base64,{image_base64}", alt="Temperature Forecast")
+        fh.Img(src=f"data:image/png;base64,{image_base64}", alt=f"Temperature Forecast for {city_name}")
     )
