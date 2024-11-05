@@ -53,15 +53,6 @@ class WeatherDashboard:
                     id="city_name_input", 
                     cls="city-input"
                 ),
-                fh.Input(
-                    type="number", 
-                    placeholder="Number of forecast days (1-7)", 
-                    name="forecast_days", 
-                    id="forecast_days_input", 
-                    min="1", 
-                    max="7", 
-                    cls="days-input"
-                ),
                 fh.Button(
                     "Update Weather", 
                     hx_get="/update_weather", 
@@ -72,7 +63,7 @@ class WeatherDashboard:
                     "View Temperature Forecast", 
                     hx_get="/get_forecast_chart", 
                     hx_target="#forecast-chart", 
-                    hx_include="#city_name_input, #forecast_days_input"
+                    hx_include="#city_name_input"
                 ),
                 style="display: flex; justify-content: center; gap: 10px;"
             ),

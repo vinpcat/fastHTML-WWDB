@@ -1,8 +1,6 @@
 from fasthtml import common as fh
 from weatherdashboard import WeatherDashboard
-from weather_api import WeatherAPI
 from visualise import generate_weather_chart
-from error_handler import validate_forecast_days
 
 app, rt = fh.fast_app()
 
@@ -12,6 +10,7 @@ def homepage():
 
 @rt("/update_weather", ["get"])
 def update_weather(city_name: str):
+    from weather_api import WeatherAPI
     api = WeatherAPI()
     data = api.get_weather_by_city(city_name)
     
@@ -35,13 +34,7 @@ def update_weather(city_name: str):
         )
 
 @rt("/get_forecast_chart", ["get"])
-def get_forecast_chart(city_name: str, forecast_days: str = "5"):  # Default to 5 days if not provided
-    # Validate forecast_days input
-    validation_error = validate_forecast_days(forecast_days)
-    if validation_error:
-        return validation_error
-    
-    forecast_days = int(forecast_days)
-    return generate_weather_chart(city_name, forecast_days)
+def get_forecast_chart(city_name: str):
+    return generate_weather_chart(city_name, use_tomorrow_api=True)
 
 fh.serve()
