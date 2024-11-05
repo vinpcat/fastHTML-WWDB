@@ -12,7 +12,7 @@ def homepage():
 @rt("/update_forecast", ["get"])
 def update_forecast(forecast_days: int):
     return fh.Div(
-        generate_weather_chart(forecast_days),
+        generate_weather_chart(forecast_days),  # This now returns a Div with an Img tag
         fh.P(f"Forecast for the next {forecast_days} days")
     )
 

@@ -1,7 +1,10 @@
-import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import io
 import base64
+from fasthtml import common as fh
 
 def generate_weather_chart(days):
     temperatures = [np.random.randint(15, 30) for _ in range(days)]
@@ -19,4 +22,7 @@ def generate_weather_chart(days):
     plt.close()
 
     image_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-    return f'<img src="data:image/png;base64,{image_base64}" alt="Temperature Forecast">'
+    # Use FastHTML to return an Img element with the base64 data
+    return fh.Div(
+        fh.Img(src=f"data:image/png;base64,{image_base64}", alt="Temperature Forecast")
+    )
