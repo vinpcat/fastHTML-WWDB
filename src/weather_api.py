@@ -3,7 +3,7 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
 class WeatherAPI:
@@ -20,20 +20,36 @@ class WeatherAPI:
             "units": "metric"
         }
         response = requests.get(f"{self.openweathermap_base_url}/weather", params=params)
-        return response.json() if response.status_code == 200 else None
+        if response.status_code == 200:
+            data = response.json()
+            precipitation = data.get("rain", {}).get("1h", 0)
+            return {
+                "current_temp": data["main"]["temp"],
+                "condition": data["weather"][0]["description"].capitalize(),
+                "humidity": data["main"]["humidity"],
+                "wind_speed": data["wind"]["speed"],
+                "precipitation": precipitation,
+                "coord": data.get("coord", {})
+            }
+        else:
+            print("Error: Unable to retrieve weather data from OpenWeatherMap.")
+            return None
 
     def get_5_day_forecast_tomorrow(self, city_name):
-        """Fetches 5-day forecast data with additional metrics using Tomorrow.io API for a specific city."""
-        # Get city coordinates using OpenWeatherMap
+        """Fetches 5-day forecast data using Tomorrow.io API for a specific city."""
         city_data = self.get_weather_by_city(city_name)
-        if not city_data:
+        if not city_data or "coord" not in city_data:
             print("Error: Unable to retrieve city coordinates.")
             return None
 
-        lat = city_data["coord"]["lat"]
-        lon = city_data["coord"]["lon"]
+        lat = city_data["coord"].get("lat")
+        lon = city_data["coord"].get("lon")
 
-        # Define start and end times for 5-day forecast
+        # Validate coordinates before making the API request
+        if lat is None or lon is None:
+            print("Error: Missing latitude or longitude for Tomorrow.io forecast.")
+            return None
+
         start_time = datetime.utcnow().isoformat() + "Z"
         end_time = (datetime.utcnow() + timedelta(days=5)).isoformat() + "Z"
 
@@ -48,10 +64,8 @@ class WeatherAPI:
         }
 
         response = requests.get(self.tomorrow_base_url, params=params)
-        
         if response.status_code == 200:
             forecast_data = response.json()
-            print("Tomorrow.io 5-day forecast data with additional metrics:", forecast_data)  # Debugging output
             return forecast_data.get("data", {}).get("timelines", [])[0].get("intervals", [])
         else:
             print("Error fetching Tomorrow.io forecast data:", response.status_code, response.text)

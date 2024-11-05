@@ -8,29 +8,38 @@ class WeatherDashboard:
         self.weather_data = self.fetch_weather_data()
 
     def fetch_weather_data(self):
-        """Fetch real data from the weather API. Return default values if API call fails or city is not provided."""
         if not self.city_name:
-            return {"current_temp": "--", "condition": "N/A", "humidity": "--", "wind_speed": "--"}
+            return {
+                "current_temp": "--", 
+                "condition": "N/A", 
+                "humidity": "--", 
+                "wind_speed": "--", 
+                "precipitation": "--"
+            }
 
         data = self.api.get_weather_by_city(self.city_name)
         if data:
-            return {
-                "current_temp": data["main"]["temp"],
-                "condition": data["weather"][0]["description"].capitalize(),
-                "humidity": data["main"]["humidity"],
-                "wind_speed": data["wind"]["speed"]
-            }
+            return data
         else:
-            return {"current_temp": "--", "condition": "N/A", "humidity": "--", "wind_speed": "--"}
+            return {
+                "current_temp": "--", 
+                "condition": "N/A", 
+                "humidity": "--", 
+                "wind_speed": "--", 
+                "precipitation": "--"
+            }
 
     def render_weather_info(self):
-        """Render the current weather information if a city is set, or a placeholder message otherwise."""
         if self.city_name and self.weather_data["current_temp"] != "--":
-            weather_info = f"Current Weather in {self.city_name}: {self.weather_data['current_temp']}°C, {self.weather_data['condition']}"
             return fh.Div(
-                fh.H2(weather_info, style="text-align: center;"),
-                fh.Div(fh.H3(f"Humidity: {self.weather_data['humidity']}%"), style="text-align: center;"),
-                fh.Div(fh.H3(f"Wind Speed: {self.weather_data['wind_speed']} km/h"), style="text-align: center;")
+                fh.H2(f"Current Weather in {self.city_name}: {self.weather_data['current_temp']}°C, {self.weather_data['condition']}", style="text-align: center;"),
+                fh.Div(
+                    fh.Div(fh.H3(f"Temperature: {self.weather_data['current_temp']}°C"), cls="box"),
+                    fh.Div(fh.H3(f"Humidity: {self.weather_data['humidity']}%"), cls="box"),
+                    fh.Div(fh.H3(f"Wind Speed: {self.weather_data['wind_speed']} km/h"), cls="box"),
+                    fh.Div(fh.H3(f"Precipitation: {self.weather_data['precipitation']} mm"), cls="box"),
+                    style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; padding: 10px;"
+                )
             )
         else:
             return fh.Div(
@@ -38,14 +47,9 @@ class WeatherDashboard:
             )
 
     def render(self):
-        """Render the main dashboard layout."""
         return fh.Div(
             fh.H1("Weather Dashboard", style="text-align: center;"),
-            
-            # Display weather info or placeholder message
             self.render_weather_info(),
-            
-            # Input for updating weather and viewing forecast
             fh.H3("Enter a city and select forecast days to update the weather or view the forecast:", style="text-align: center;"),
             fh.Div(
                 fh.Input(
@@ -78,8 +82,6 @@ class WeatherDashboard:
                 ),
                 style="display: flex; justify-content: center; gap: 10px;"
             ),
-            
-            # Placeholder for dynamically updated weather information and forecast chart
             fh.Div(id="weather-info", style="text-align: center;"),
             fh.Div(id="forecast-chart", style="text-align: center;")
         )
