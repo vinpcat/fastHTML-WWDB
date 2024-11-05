@@ -35,7 +35,8 @@ def update_weather(city_name: str):
         )
 
 @rt("/get_forecast_chart", ["get"])
-def get_forecast_chart(city_name: str, forecast_days: str):
+def get_forecast_chart(city_name: str, forecast_days: str = "5"):  # Default to 5 days if not provided
+    # Validate forecast_days input
     validation_error = validate_forecast_days(forecast_days)
     if validation_error:
         return validation_error
