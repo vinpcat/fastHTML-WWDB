@@ -42,10 +42,8 @@ class WeatherDashboard:
         return fh.Div(
             fh.H1("Weather Dashboard", style="text-align: center;"),
             
-            # Display weather info or placeholder message
             self.render_weather_info(),
             
-            # Input for updating weather and viewing forecast
             fh.H3("Enter a city to update the weather or view the forecast:", style="text-align: center;"),
             fh.Div(
                 fh.Input(
@@ -79,7 +77,6 @@ class WeatherDashboard:
                 style="display: flex; justify-content: center; gap: 10px;"
             ),
             
-            # Placeholder for dynamically updated weather information and forecast chart
             fh.Div(id="weather-info", style="text-align: center;"),
-            fh.Div(id="forecast-chart", style="text-align: center;")  # Placeholder for forecast chart
+            fh.Div(id="forecast-chart", style="text-align: center;")
         )
