@@ -6,58 +6,77 @@ import base64
 from fasthtml import common as fh
 from weather_api import WeatherAPI
 
-def generate_weather_chart(city_name, forecast_days=5, use_tomorrow_api=True):
+def generate_weather_chart(city_name, forecast_days=5):
     api = WeatherAPI()
+    forecast_data = api.get_5_day_forecast_tomorrow(city_name)
     
-    if use_tomorrow_api:
-        print(f"Fetching {forecast_days}-day forecast from Tomorrow.io for {city_name}...")  # Debug output
-        forecast_data = api.get_7_day_forecast_tomorrow(city_name)
-        if not forecast_data:
-            print("Error: Forecast data could not be retrieved from Tomorrow.io.")
-            return fh.Div(fh.P("Error: Unable to fetch forecast data. Please try again.", cls="error-message"))
+    if not forecast_data:
+        print("Error: Forecast data could not be retrieved.")
+        return fh.Div(fh.P("Error: Unable to fetch forecast data. Please try again.", cls="error-message"))
 
-        # Extract daily minimum and maximum temperatures from Tomorrow.io forecast, limited to forecast_days
-        try:
-            days = [interval["startTime"][:10] for interval in forecast_data[:forecast_days]]  # Extract date in YYYY-MM-DD format
-            temperatures_min = [interval["values"]["temperatureMin"] for interval in forecast_data[:forecast_days]]
-            temperatures_max = [interval["values"]["temperatureMax"] for interval in forecast_data[:forecast_days]]
-            print("Extracted dates:", days)  # Debugging output
-            print("Min temperatures:", temperatures_min)  # Debugging output
-            print("Max temperatures:", temperatures_max)  # Debugging output
-        except KeyError as e:
-            print(f"Error: Missing key {e} in Tomorrow.io forecast data.")
-            return fh.Div(fh.P("Error: Forecast data format is incorrect.", cls="error-message"))
-    else:
-        print("Using OpenWeatherMap as a fallback.")
-        return fh.Div(fh.P("OpenWeatherMap fallback not implemented for forecast.", cls="error-message"))
+    days = [interval["startTime"][:10] for interval in forecast_data[:forecast_days]]
     
-    # Plot the min and max temperatures for the forecast
-    try:
-        plt.figure(figsize=(10, 5))
-        plt.plot(days, temperatures_min, marker='o', linestyle='-', color='blue', label='Min Temp')
-        plt.plot(days, temperatures_max, marker='o', linestyle='-', color='red', label='Max Temp')
-        plt.title(f'{forecast_days}-Day Temperature Forecast for {city_name}')
-        plt.xlabel('Date')
-        plt.ylabel('Temperature (°C)')
-        plt.legend()
-        plt.grid(True)
-    except Exception as e:
-        print("Error during plotting:", e)
-        return fh.Div(fh.P("Error: Unable to generate the chart. Please try again.", cls="error-message"))
+    # Temperature Chart
+    temperatures_min = [interval["values"]["temperatureMin"] for interval in forecast_data[:forecast_days]]
+    temperatures_max = [interval["values"]["temperatureMax"] for interval in forecast_data[:forecast_days]]
+    temperature_chart = create_chart(days, temperatures_min, temperatures_max, city_name, "Temperature (°C)", "Temperature Forecast", "Min Temp", "Max Temp")
     
-    # Save plot to buffer and encode as a base64 string
-    try:
-        buf = io.BytesIO()
-        plt.savefig(buf, format="png")
-        buf.seek(0)
-        plt.close()
-        image_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-        print("Chart successfully encoded to base64.")  # Debugging output
-    except Exception as e:
-        print("Error during buffer encoding:", e)
-        return fh.Div(fh.P("Error: Unable to encode chart image. Please try again.", cls="error-message"))
+    # Humidity Chart
+    humidity = [interval["values"]["humidityAvg"] for interval in forecast_data[:forecast_days]]
+    humidity_chart = create_single_chart(days, humidity, city_name, "Humidity (%)", "Humidity Forecast")
     
-    # Return the encoded image as an HTML element for display
+    # Wind Gust Chart
+    wind_gust = [interval["values"]["windGust"] for interval in forecast_data[:forecast_days]]
+    wind_gust_chart = create_single_chart(days, wind_gust, city_name, "Wind Gust (km/h)", "Wind Gust Forecast")
+    
+    # Precipitation Chart
+    precipitation = [interval["values"]["precipitationIntensityAvg"] for interval in forecast_data[:forecast_days]]
+    precipitation_chart = create_single_chart(days, precipitation, city_name, "Precipitation (mm/h)", "Precipitation Forecast")
+    
+    # Arrange charts in a side-by-side 2x2 grid layout
     return fh.Div(
-        fh.Img(src=f"data:image/png;base64,{image_base64}", alt=f"{forecast_days}-Day Temperature Forecast for {city_name}")
+        fh.Div(
+            fh.Div(temperature_chart, cls="chart-cell"),
+            fh.Div(humidity_chart, cls="chart-cell"),
+            style="display: flex; flex-direction: column; gap: 20px;"
+        ),
+        fh.Div(
+            fh.Div(wind_gust_chart, cls="chart-cell"),
+            fh.Div(precipitation_chart, cls="chart-cell"),
+            style="display: flex; flex-direction: column; gap: 20px;"
+        ),
+        style="display: flex; justify-content: center; gap: 20px;"
+    )
+
+def create_chart(days, data_min, data_max, city_name, ylabel, title, label_min, label_max):
+    """Helper function to generate a temperature chart with min and max values."""
+    plt.figure(figsize=(8, 4))  # Adjusted figure size for grid layout
+    plt.plot(days, data_min, marker='o', linestyle='-', color='blue', label=label_min)
+    plt.plot(days, data_max, marker='o', linestyle='-', color='red', label=label_max)
+    plt.title(f'{title} for {city_name}')
+    plt.xlabel('Date')
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.grid(True)
+    return encode_chart_to_base64()
+
+def create_single_chart(days, data, city_name, ylabel, title):
+    """Helper function to generate a single line chart."""
+    plt.figure(figsize=(8, 4))  # Adjusted figure size for grid layout
+    plt.plot(days, data, marker='o', linestyle='-', color='green')
+    plt.title(f'{title} for {city_name}')
+    plt.xlabel('Date')
+    plt.ylabel(ylabel)
+    plt.grid(True)
+    return encode_chart_to_base64()
+
+def encode_chart_to_base64():
+    """Encodes the chart to a base64 string for HTML rendering."""
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    plt.close()
+    image_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return fh.Div(
+        fh.Img(src=f"data:image/png;base64,{image_base64}", alt="Forecast Chart")
     )
