@@ -22,8 +22,8 @@ class WeatherAPI:
         response = requests.get(f"{self.openweathermap_base_url}/weather", params=params)
         return response.json() if response.status_code == 200 else None
 
-    def get_7_day_forecast_tomorrow(self, city_name):
-        """Fetches 5-day forecast data using Tomorrow.io API for a specific city (due to plan limitations)."""
+    def get_5_day_forecast_tomorrow(self, city_name):
+        """Fetches 5-day forecast data with additional metrics using Tomorrow.io API for a specific city."""
         # Get city coordinates using OpenWeatherMap
         city_data = self.get_weather_by_city(city_name)
         if not city_data:
@@ -40,7 +40,7 @@ class WeatherAPI:
         params = {
             "apikey": self.tomorrow_api_key,
             "location": f"{lat},{lon}",
-            "fields": ["temperatureMin", "temperatureMax"],
+            "fields": ["temperatureMin", "temperatureMax", "humidityAvg", "windGust", "precipitationIntensityAvg"],
             "units": "metric",
             "timesteps": "1d",
             "startTime": start_time,
@@ -51,7 +51,7 @@ class WeatherAPI:
         
         if response.status_code == 200:
             forecast_data = response.json()
-            print("Tomorrow.io 5-day forecast data:", forecast_data)  # Debugging output
+            print("Tomorrow.io 5-day forecast data with additional metrics:", forecast_data)  # Debugging output
             return forecast_data.get("data", {}).get("timelines", [])[0].get("intervals", [])
         else:
             print("Error fetching Tomorrow.io forecast data:", response.status_code, response.text)
