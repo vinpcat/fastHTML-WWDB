@@ -45,14 +45,15 @@ class WeatherDashboard:
             # Display weather info or placeholder message
             self.render_weather_info(),
             
-            # Input for updating weather
-            fh.H3("Enter a city to update the weather:", style="text-align: center;"),
+            # Input for updating weather and viewing forecast
+            fh.H3("Enter a city to update the weather or view the forecast:", style="text-align: center;"),
             fh.Div(
                 fh.Input(
                     type="text", 
                     placeholder="Enter city name", 
                     name="city_name", 
-                    id="city_name_input"
+                    id="city_name_input", 
+                    cls="city-input"
                 ),
                 fh.Button(
                     "Update Weather", 
@@ -60,9 +61,16 @@ class WeatherDashboard:
                     hx_target="#weather-info", 
                     hx_include="#city_name_input"
                 ),
+                fh.Button(
+                    "View Temperature Forecast", 
+                    hx_get="/get_forecast_chart", 
+                    hx_target="#forecast-chart", 
+                    hx_include="#city_name_input"
+                ),
                 style="display: flex; justify-content: center; gap: 10px;"
             ),
             
-            # Placeholder for dynamically updated weather information
-            fh.Div(id="weather-info", style="text-align: center;")
+            # Placeholder for dynamically updated weather information and forecast chart
+            fh.Div(id="weather-info", style="text-align: center;"),
+            fh.Div(id="forecast-chart", style="text-align: center;")  # Placeholder for forecast chart
         )
