@@ -29,20 +29,28 @@ def generate_weather_chart(city_name, forecast_days=5):
     wind_gust = [interval["values"]["windGust"] for interval in forecast_data[:forecast_days]]
     wind_gust_chart = create_single_chart(days, wind_gust, city_name, "Wind Gust (km/h)", "Wind Gust Forecast")
     
-    # Precipitation Chart (using precipitationIntensityAvg instead of precipitationSum)
+    # Precipitation Chart
     precipitation = [interval["values"]["precipitationIntensityAvg"] for interval in forecast_data[:forecast_days]]
     precipitation_chart = create_single_chart(days, precipitation, city_name, "Precipitation (mm/h)", "Precipitation Forecast")
     
+    # Arrange charts in a side-by-side 2x2 grid layout
     return fh.Div(
-        temperature_chart,
-        humidity_chart,
-        wind_gust_chart,
-        precipitation_chart
+        fh.Div(
+            fh.Div(temperature_chart, cls="chart-cell"),
+            fh.Div(humidity_chart, cls="chart-cell"),
+            style="display: flex; flex-direction: column; gap: 20px;"
+        ),
+        fh.Div(
+            fh.Div(wind_gust_chart, cls="chart-cell"),
+            fh.Div(precipitation_chart, cls="chart-cell"),
+            style="display: flex; flex-direction: column; gap: 20px;"
+        ),
+        style="display: flex; justify-content: center; gap: 20px;"
     )
 
 def create_chart(days, data_min, data_max, city_name, ylabel, title, label_min, label_max):
     """Helper function to generate a temperature chart with min and max values."""
-    plt.figure(figsize=(8, 4))
+    plt.figure(figsize=(8, 4))  # Adjusted figure size for grid layout
     plt.plot(days, data_min, marker='o', linestyle='-', color='blue', label=label_min)
     plt.plot(days, data_max, marker='o', linestyle='-', color='red', label=label_max)
     plt.title(f'{title} for {city_name}')
@@ -54,7 +62,7 @@ def create_chart(days, data_min, data_max, city_name, ylabel, title, label_min, 
 
 def create_single_chart(days, data, city_name, ylabel, title):
     """Helper function to generate a single line chart."""
-    plt.figure(figsize=(8, 4))
+    plt.figure(figsize=(8, 4))  # Adjusted figure size for grid layout
     plt.plot(days, data, marker='o', linestyle='-', color='green')
     plt.title(f'{title} for {city_name}')
     plt.xlabel('Date')
