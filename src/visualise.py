@@ -10,11 +10,11 @@ def generate_weather_chart(city_name, use_tomorrow_api=True):
     api = WeatherAPI()
     
     if use_tomorrow_api:
-        print(f"Fetching 7-day forecast from Tomorrow.io for {city_name}...")  # Debug output
+        print(f"Fetching 5-day forecast from Tomorrow.io for {city_name}...")  # Debug output
         forecast_data = api.get_7_day_forecast_tomorrow(city_name)
         if not forecast_data:
-            print("Error: 7-day forecast data could not be retrieved from Tomorrow.io.")
-            return fh.Div(fh.P("Error: Unable to fetch 7-day forecast data. Please try again.", cls="error-message"))
+            print("Error: 5-day forecast data could not be retrieved from Tomorrow.io.")
+            return fh.Div(fh.P("Error: Unable to fetch 5-day forecast data. Please try again.", cls="error-message"))
 
         # Extract daily minimum and maximum temperatures from Tomorrow.io forecast
         try:
@@ -29,14 +29,14 @@ def generate_weather_chart(city_name, use_tomorrow_api=True):
             return fh.Div(fh.P("Error: Forecast data format is incorrect.", cls="error-message"))
     else:
         print("Using OpenWeatherMap as a fallback.")
-        return fh.Div(fh.P("OpenWeatherMap fallback not implemented for 7-day forecast.", cls="error-message"))
+        return fh.Div(fh.P("OpenWeatherMap fallback not implemented for 5-day forecast.", cls="error-message"))
     
-    # Plot the min and max temperatures for the 7-day forecast
+    # Plot the min and max temperatures for the 5-day forecast
     try:
         plt.figure(figsize=(10, 5))
         plt.plot(days, temperatures_min, marker='o', linestyle='-', color='blue', label='Min Temp')
         plt.plot(days, temperatures_max, marker='o', linestyle='-', color='red', label='Max Temp')
-        plt.title(f'7-Day Temperature Forecast for {city_name}')
+        plt.title(f'5-Day Temperature Forecast for {city_name}')
         plt.xlabel('Date')
         plt.ylabel('Temperature (°C)')
         plt.legend()
@@ -59,5 +59,5 @@ def generate_weather_chart(city_name, use_tomorrow_api=True):
     
     # Return the encoded image as an HTML element for display
     return fh.Div(
-        fh.Img(src=f"data:image/png;base64,{image_base64}", alt=f"7-Day Temperature Forecast for {city_name}")
+        fh.Img(src=f"data:image/png;base64,{image_base64}", alt=f"5-Day Temperature Forecast for {city_name}")
     )
